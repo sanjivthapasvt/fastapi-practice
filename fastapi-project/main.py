@@ -23,6 +23,11 @@ def read_tasks():
 
 
 #you can send curl request to test api
-# curl -X POST http://localhost:8000/tasks/ \         
+# curl -X POST http://127.0.0.1:8000/tasks/ \         
 #      -H "Content-Type: application/json" \
 #      -d '{"title": "OK it is working now yayayayayyayay", "description": "its workign bang bang bang", "completed": true}'
+
+
+#can also do get reqest
+
+# curl -X GET http://127.0.0.1:8000/tasks/
