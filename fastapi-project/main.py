@@ -1,13 +1,28 @@
-from fastapi import FastAPI, Request
-from fastapi.responses import HTMLResponse
-from fastapi.staticfiles import StaticFiles
-from fastapi.templating import Jinja2Templates
-app =FastAPI()
+from fastapi import FastAPI
+from pydantic import BaseModel
+from uuid import UUID, uuid4
+app = FastAPI()
 
-app.mount("/static", StaticFiles(directory="static"), name="static")
+class Tasks(BaseModel):
+    id: UUID | None = None
+    title: str
+    description: str | None = None
+    completed: bool = False
+    
+tasks = []
 
-templates = Jinja2Templates(directory="templates")
+@app.post("/tasks/", response_model=list[Tasks])
+def create_tasks(task: Tasks):
+    new_task = task.model_copy(update={"id": uuid4()})
+    tasks.append(new_task)
+    return new_task
 
-@app.get("/", response_class=HTMLResponse)
-async def index(request: Request):
-    return templates.TemplateResponse(request=request, name="index.html")
+@app.get("/tasks/", response_model = list[Tasks])
+def read_tasks():
+    return tasks
+
+
+#you can send curl request to test api
+# curl -X POST http://localhost:8000/tasks/ \         
+#      -H "Content-Type: application/json" \
+#      -d '{"title": "OK it is working now yayayayayyayay", "description": "its workign bang bang bang", "completed": true}'
