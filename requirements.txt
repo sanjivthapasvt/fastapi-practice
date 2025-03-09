@@ -1,1 +1,5 @@
 fastapi[standard]
+uvicorn[standard]
+jinja2
+pyjwt
+passlib
