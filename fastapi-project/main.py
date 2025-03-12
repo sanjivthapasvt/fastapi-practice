@@ -44,11 +44,11 @@ SessionDep = Annotated[Session, Depends(get_session)]
 app = FastAPI()
 
 @app.on_event("startup")
-def on_startup():
+async def on_startup():
     create_db_and_tables()
 
 @app.post("/tasks/", response_model=TasksPublic)
-def create_tasks(task: TasksCreate, session: SessionDep) -> Tasks:
+async def create_tasks(task: TasksCreate, session: SessionDep) -> Tasks:
     db_task = Tasks.model_validate(task)
     session.add(db_task)
     session.commit()
@@ -56,19 +56,19 @@ def create_tasks(task: TasksCreate, session: SessionDep) -> Tasks:
     return db_task
 
 @app.get("/tasks/", response_model=list[TasksPublic])
-def read_tasks(session: SessionDep, offset: int = 0, limit: Annotated[int, Query(le=100)] = 100) -> list[Tasks]:
+async def read_tasks(session: SessionDep, offset: int = 0, limit: Annotated[int, Query(le=100)] = 100) -> list[Tasks]:
     tasks = session.exec(select(Tasks).offset(offset).limit(limit)).all()
     return tasks
 
 @app.get("/tasks/{task_id}", response_model=TasksPublic)
-def read_task(task_id: int, session: SessionDep) -> Tasks:
+async def read_task(task_id: int, session: SessionDep) -> Tasks:
     task = session.get(Tasks, task_id)
     if not task:
         raise HTTPException(status_code=404, detail="Task not found")
     return task
 
 @app.patch("/tasks/{task_id}", response_model=TasksPublic)
-def update_task(task_id: int, task: TasksUpdate, session: SessionDep) -> Tasks:
+async def update_task(task_id: int, task: TasksUpdate, session: SessionDep) -> Tasks:
     task_db = session.get(Tasks, task_id)
     if not task_db:
         raise HTTPException(status_code=404, detail="Item not found")
@@ -81,7 +81,7 @@ def update_task(task_id: int, task: TasksUpdate, session: SessionDep) -> Tasks:
     return task_db
 
 @app.delete("/tasks/{task_id}")
-def delete_task(task_id: int, session: SessionDep):
+async def delete_task(task_id: int, session: SessionDep):
     task = session.get(Tasks, task_id)
     if not task:
         raise HTTPException(status_code=404, detail="Task not found")
